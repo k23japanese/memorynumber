@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>数字と画像マッチングゲーム</title>
+<style>
+  body { font-family: sans-serif; text-align: center; padding: 10px; }
+  img { max-width: 200px; margin: 10px; }
+  input { font-size: 20px; width: 80px; text-align: center; }
+  button { font-size: 18px; padding: 8px 16px; margin-top: 10px; }
+  .choices img { width: 120px; cursor: pointer; }
+</style>
+</head>
+<body>
+
+<h2 id="levelTitle">レベル1</h2>
+
+<div id="gameArea"></div>
+
+<button onclick="checkAnswer()">次へ</button>
+
+<script>
+const images = [...Array(100)].map((_, i) =>
+  String(i).padStart(2, '0')
+);
+
+let level = 1;
+let currentAnswer = "";
+let mode = "input";
+
+function randomNumber() {
+  return images[Math.floor(Math.random() * images.length)];
+}
+
+function loadGame() {
+  const game = document.getElementById("gameArea");
+  game.innerHTML = "";
+  document.getElementById("levelTitle").innerText = "レベル " + level;
+
+  if (level === 1) {
+    mode = "input";
+  } else if (level === 2) {
+    mode = "choice";
+  } else {
+    mode = Math.random() < 0.5 ? "input" : "choice";
+  }
+
+  currentAnswer = randomNumber();
+
+  if (mode === "input") {
+    game.innerHTML = `
+      <img src="images/${currentAnswer}.png"><br>
+      <input id="answer" type="number" placeholder="数字を入力">
+    `;
+    document.getElementById("answer").focus();
+  } else {
+    let options = [currentAnswer];
+    while (options.length < 3) {
+      let r = randomNumber();
+      if (!options.includes(r)) options.push(r);
+    }
+    options.sort(() => Math.random() - 0.5);
+
+    let html = `<h3>${currentAnswer}</h3>`;
+    options.forEach(o => {
+      html += `
+        <label>
+          <input type="radio" name="img" value="${o}">
+          <img src="images/${o}.png">
+        </label><br>
+      `;
+    });
+    game.innerHTML = html;
+  }
+}
+
+function checkAnswer() {
+  let userAnswer = "";
+
+  if (mode === "input") {
+    userAnswer = document.getElementById("answer").value.padStart(2, "0");
+  } else {
+    const checked = document.querySelector("input[name='img']:checked");
+    if (!checked) return alert("選択してください");
+    userAnswer = checked.value;
+  }
+
+  if (userAnswer === currentAnswer) {
+    alert("正解！");
+    loadGame();
+  } else {
+    alert("違います。もう一度！");
+  }
+}
+
+loadGame();
+</script>
+
+</body>
+</html>
